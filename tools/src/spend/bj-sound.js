@@ -1,4 +1,4 @@
-// Table sounds for blackjack, made on the fly with the Web Audio API (no sound files): a card flicked out of the shoe, a card
+// Table sounds for blackjack and crate battles, made on the fly with the Web Audio API (no sound files): a card flicked out of the shoe, a card
 // turned over, cards slid apart, a knock on the felt, chips, and short win / lose cues. Muting is remembered in this browser.
 window.BJSound = (() => {
   const KEY = "ot-bj-sound";
@@ -51,6 +51,8 @@ window.BJSound = (() => {
     knock() { tone(0, 0.09, 150, 0.5, "sine", 80); hiss(0, 0.03, 700, 1, 0.2); tone(0.14, 0.09, 140, 0.42, "sine", 75); hiss(0.14, 0.03, 650, 1, 0.16); },
     // chips clicking together
     chip() { tone(0, 0.045, vary(4300, 0.08), 0.09, "triangle"); tone(0.04, 0.05, vary(5100, 0.08), 0.07, "triangle"); hiss(0, 0.04, 6000, 2, 0.08); },
+    // a crate reel clicking past each item
+    tick() { tone(0, 0.025, vary(2500, 0.1), 0.045, "square"); },
     win() { [0, 0.06, 0.12, 0.19, 0.27].forEach((t, i) => tone(t, 0.06, vary(4200 + i * 220, 0.05), 0.07, "triangle")); tone(0.05, 0.35, 660, 0.09); tone(0.13, 0.4, 990, 0.07); },
     blackjack() { FX.win(); tone(0.22, 0.5, 1320, 0.08); tone(0.32, 0.6, 1760, 0.05); },
     push() { tone(0, 0.18, 520, 0.08); tone(0.12, 0.22, 520, 0.06); },

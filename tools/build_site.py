@@ -1220,7 +1220,7 @@ hub += """<div class="wrap">
   window.addEventListener("pageshow", showCoins);
   wb.addEventListener("click", e => { e.stopPropagation(); wp.hidden = !wp.hidden; wb.setAttribute("aria-expanded", String(!wp.hidden)); });
   document.addEventListener("click", e => { if (!wp.hidden && !e.target.closest("#wallet-wrap")) { wp.hidden = true; wb.setAttribute("aria-expanded", "false"); } });
-  const routes = """ + json.dumps({l: q["dir"] + "/" for q in QUIZZES for l in [q["config"]["letter"]] + q.get("aliases", [])}) + """;
+  const routes = """ + json.dumps(dict({l: q["dir"] + "/" for q in QUIZZES for l in [q["config"]["letter"]] + q.get("aliases", [])}, K="spend-coins/")) + """;
   const ALPH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   document.getElementById("join").addEventListener("submit", e => {
     e.preventDefault();
@@ -1228,7 +1228,7 @@ hub += """<div class="wrap">
     const err = document.getElementById("err");
     if (c.length !== 5 || ![...c].every(ch => ALPH.includes(ch))) { err.textContent = "Codes are 5 letters or numbers, like M7QX2."; return; }
     const r = routes[c[0]];
-    if (!r) { err.textContent = """ + json.dumps("That code doesn't match a game. Codes start with " + ", ".join(q["config"]["letter"] + " (" + q["tile"]["title"].rstrip("?") + ")" for q in QUIZZES[:-1]) + " or " + QUIZZES[-1]["config"]["letter"] + " (" + QUIZZES[-1]["tile"]["title"].rstrip("?") + ").") + """; return; }
+    if (!r) { err.textContent = """ + json.dumps("That code doesn't match a game. Codes start with " + ", ".join(q["config"]["letter"] + " (" + q["tile"]["title"].rstrip("?") + ")" for q in QUIZZES) + " or K (Crate Battles).") + """; return; }
     location.href = r + "?join=" + c;
   });
 })();
@@ -1370,9 +1370,9 @@ acc_page += """<div class="wrap acct">
 # ------------------------------------------------------------------ the Spend coins page: Blackjack, open to everyone
 SP = os.path.join(SRC, "spend")
 os.makedirs(os.path.join(OUT, "spend-coins"), exist_ok=True)
-for fn in ("bj-core.js", "bj-sound.js", "bj-ui.js", "bj.css"):
+for fn in ("bj-core.js", "bj-sound.js", "bj-ui.js", "bj.css", "crates.js", "battle.js"):
     shutil.copy(os.path.join(SP, fn), os.path.join(OUT, "spend-coins", fn))
-V_SP = {fn: stamp(os.path.join(OUT, "spend-coins", fn)) for fn in ("bj-core.js", "bj-sound.js", "bj-ui.js", "bj.css")}
+V_SP = {fn: stamp(os.path.join(OUT, "spend-coins", fn)) for fn in ("bj-core.js", "bj-sound.js", "bj-ui.js", "bj.css", "crates.js", "battle.js")}
 sp_page = head("Spend Coins: Blackjack – Obscure Trivia", "Spend the coins you win in Obscure Trivia's quizzes: play blackjack against the dealer. Win and your bet comes back doubled; a blackjack pays 3 to 2.",
                SITE + "spend-coins/", "family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Inter:wght@400;500;700", "#121117", hub_fav,
                extra_head=f"""<style>{hub_css}
@@ -1380,9 +1380,8 @@ sp_page = head("Spend Coins: Blackjack – Obscure Trivia", "Spend the coins you
 .back-link {{ margin-left: auto; color: var(--muted); text-decoration: none; font-weight: 700; font-size: 0.92rem; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--line); }}
 .back-link:hover {{ color: var(--ink); border-color: var(--muted); }}
 .spend-tabs {{ display: flex; align-items: center; gap: 8px; padding: 4px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); width: fit-content; max-width: 100%; }}
-.spend-tabs [role="tab"] {{ border: 0; border-radius: 10px; padding: 9px 16px; font: inherit; font-weight: 800; background: var(--panel); color: var(--ink);
-  box-shadow: 0 0 0 1px var(--line); cursor: default; }}
-.spend-tabs .soon {{ color: var(--faint); font-size: 0.86rem; padding: 0 10px 0 4px; }}
+.spend-tabs [role="tab"] {{ border: 0; border-radius: 10px; padding: 9px 16px; font: inherit; font-weight: 800; background: none; color: var(--muted); cursor: pointer; }}
+.spend-tabs [role="tab"][aria-selected="true"] {{ background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }}
 .btn.gold {{ background: #f2c14e; color: #2b1d00; }}
 .btn {{ border-radius: 10px; border: 1px solid var(--line); padding: 11px 16px; font: inherit; font-weight: 800; background: var(--panel); color: var(--ink); cursor: pointer; }}
 .btn:disabled {{ opacity: 0.5; cursor: default; }}
@@ -1393,14 +1392,32 @@ sp_page += """<div class="wrap spend">
     <a class="back-link" href="../">All quizzes</a></header>
   <section class="hero"><span class="eyebrow">Spend coins</span><h2>Put your coins on the line.</h2>
     <p>Every right answer in any quiz wins you a coin. Spend them here.</p></section>
-  <div class="spend-tabs" role="tablist" aria-label="Ways to spend coins"><button role="tab" aria-selected="true" aria-controls="bj">🃏 Blackjack</button><span class="soon">More coming soon</span></div>
+  <div class="spend-tabs" role="tablist" aria-label="Ways to spend coins"><button role="tab" id="tab-bj" aria-selected="true" aria-controls="bj">🃏 Blackjack</button><button role="tab" id="tab-battles" aria-selected="false" aria-controls="battles">📦 Crate Battles</button></div>
 """ + open(os.path.join(SP, "bj.html"), encoding="utf-8").read() + f"""
+  <section class="panel" id="battles" role="tabpanel" aria-labelledby="tab-battles" hidden></section>
   <p class="foot">Coins have no money value and can't be bought or cashed out. They're just for fun.</p>
 </div>
 <script src="../assets/account.js?v={V_ACC}"></script>
 <script src="bj-core.js?v={V_SP['bj-core.js']}"></script>
 <script src="bj-sound.js?v={V_SP['bj-sound.js']}"></script>
 <script src="bj-ui.js?v={V_SP['bj-ui.js']}"></script>
+<script src="crates.js?v={V_SP['crates.js']}"></script>
+<script src="battle.js?v={V_SP['battle.js']}"></script>
+<script>
+(() => {{
+  // two tabs: Blackjack and Crate Battles (also opened by #battles, or by a battle code from the home page)
+  const tabs = {{ bj: document.getElementById("tab-bj"), battles: document.getElementById("tab-battles") }};
+  const show = which => {{
+    for (const [k, t] of Object.entries(tabs)) {{ const on = k === which; t.setAttribute("aria-selected", String(on)); document.getElementById(k).hidden = !on; }}
+    try {{ history.replaceState(null, "", location.pathname + (which === "battles" ? "#battles" : "")); }} catch (e) {{}}
+  }};
+  tabs.bj.onclick = () => show("bj");
+  tabs.battles.onclick = () => show("battles");
+  const join = new URLSearchParams(location.search).get("join");
+  if (join && /^K/i.test(join)) {{ show("battles"); window.CrateBattles && window.CrateBattles.join(join); }}
+  else if (location.hash === "#battles") show("battles");
+}})();
+</script>
 </body>
 </html>
 """

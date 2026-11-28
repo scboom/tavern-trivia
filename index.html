@@ -404,7 +404,7 @@ a { color: inherit; }
   window.addEventListener("pageshow", showCoins);
   wb.addEventListener("click", e => { e.stopPropagation(); wp.hidden = !wp.hidden; wb.setAttribute("aria-expanded", String(!wp.hidden)); });
   document.addEventListener("click", e => { if (!wp.hidden && !e.target.closest("#wallet-wrap")) { wp.hidden = true; wb.setAttribute("aria-expanded", "false"); } });
-  const routes = {"W": "general-knowledge/", "H": "hearthstone/", "M": "minecraft/", "N": "fortnite/", "R": "clash-royale/", "D": "dead-by-daylight/", "A": "animals/", "F": "football/", "C": "cars/", "S": "music/", "T": "this-or-that/", "B": "this-or-that/", "X": "odd-one-out/", "Y": "timeline/"};
+  const routes = {"W": "general-knowledge/", "H": "hearthstone/", "M": "minecraft/", "N": "fortnite/", "R": "clash-royale/", "D": "dead-by-daylight/", "A": "animals/", "F": "football/", "C": "cars/", "S": "music/", "T": "this-or-that/", "B": "this-or-that/", "X": "odd-one-out/", "Y": "timeline/", "K": "spend-coins/"};
   const ALPH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   document.getElementById("join").addEventListener("submit", e => {
     e.preventDefault();
@@ -412,7 +412,7 @@ a { color: inherit; }
     const err = document.getElementById("err");
     if (c.length !== 5 || ![...c].every(ch => ALPH.includes(ch))) { err.textContent = "Codes are 5 letters or numbers, like M7QX2."; return; }
     const r = routes[c[0]];
-    if (!r) { err.textContent = "That code doesn't match a game. Codes start with W (General Knowledge), H (Hearthstone Battlegrounds), M (Minecraft), N (OG Fortnite), R (Clash Royale), D (Dead by Daylight), A (Animals), F (Football), C (Cars), S (Music), T (This or That), X (Odd One Out) or Y (Timeline)."; return; }
+    if (!r) { err.textContent = "That code doesn't match a game. Codes start with W (General Knowledge), H (Hearthstone Battlegrounds), M (Minecraft), N (OG Fortnite), R (Clash Royale), D (Dead by Daylight), A (Animals), F (Football), C (Cars), S (Music), T (This or That), X (Odd One Out), Y (Timeline) or K (Crate Battles)."; return; }
     location.href = r + "?join=" + c;
   });
 })();
